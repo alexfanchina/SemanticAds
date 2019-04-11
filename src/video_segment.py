@@ -1,4 +1,4 @@
-from src.video_io import VideoIO
+from video_io import VideoIO
 import numpy as np
 import math
 
@@ -16,10 +16,12 @@ class VideoSegment:
         else:
             self.feature_matrix_A = VideoSegment.get_feature_matrix(self.video_io)
             np.save(feature_matrix_path, self.feature_matrix_A)
-        self.u, self.s, self.vh = np.linalg.svd(
-            self.feature_matrix_A, full_matrices=False)
-        print('shape(U) = %s, shape(s) = %s, shape(V.T) = %s' % (
-            self.u.shape, self.s.shape, self.vh.shape))
+        self.u, self.s, self.vh = np.linalg.svd(self.feature_matrix_A, full_matrices=False)
+        # print('shape(U) = %s, shape(s) = %s, shape(V.T) = %s' % (
+        #     self.u.shape, self.s.shape, self.vh.shape))
+        self.shot_boundaries = self._segment()
+        print('shot_boundaries =\n%s' % self.shot_boundaries)
+        self.content_shots, self.ads_shots = self._tag_content_ads()
 
     def _diff_between_frames(self, frame_i, frame_j, kappa=150):
         s, v = self.s, self.vh.T
@@ -27,22 +29,6 @@ class VideoSegment:
         for idx in range(kappa):
             diff_square += s[idx] * (v[frame_i, idx] - v[frame_j, idx]) ** 2
         return math.sqrt(diff_square)
-    
-    def _length_of_psi(self, frame_i):
-        v = self.vh.T
-        rank_A = np.linalg.matrix_rank(self.feature_matrix_A)
-        psi_square = 0
-        for idx in range(rank_A):
-            psi_square += v[frame_i, idx] ** 2
-        return math.sqrt(psi_square)
-
-    def _length_of_singular_weighted_psi(self, frame_i):
-        s, v = self.s, self.vh.T
-        rank_A = np.linalg.matrix_rank(self.feature_matrix_A)
-        sw_psi_square = 0
-        for idx in range(rank_A):
-            sw_psi_square += (s[idx]**2) * (v[frame_i, idx]**2)
-        return math.sqrt(sw_psi_square)
     
     def _is_shot_boundary(self, diff, frame_i):
         """Check if `frame_i` is the last frame of a shot"""
@@ -60,8 +46,8 @@ class VideoSegment:
             else:
                 return False, frame_i + 1
     
-    def segment(self):
-        self.shot_boundary = []
+    def _segment(self):
+        shot_boundaries = []
         diff = [0 for _ in range(self.video_io.get_num_frames())]
         for frame in range(1, len(diff)):
             diff[frame] = self._diff_between_frames(frame, frame - 1, kappa=80)
@@ -69,12 +55,93 @@ class VideoSegment:
         while frame < len(diff):
             is_shot_boundary, next = self._is_shot_boundary(diff, frame)
             if is_shot_boundary:
-                self.shot_boundary.append(frame)
+                shot_boundaries.append(frame)
             frame = next
-        print(self.shot_boundary)
         import matplotlib.pyplot as plt
         plt.scatter(np.arange(len(diff)), diff, s=3)
         plt.show()
+        return shot_boundaries
+    
+    def _length_of_psi(self, frame_i):
+        v = self.vh.T
+        rank_A = np.linalg.matrix_rank(self.feature_matrix_A)
+        return np.linalg.norm(v[:rank_A])
+
+    def _length_of_singular_weighted_psi(self, frame_i):
+        s, v = self.s, self.vh.T
+        rank_A = np.linalg.matrix_rank(self.feature_matrix_A)
+        return np.linalg.norm(np.multiply(s[:rank_A], v[:rank_A]))
+    
+    # def _avg_length_of_psi(self, start_frame, end_frame):
+    #     psi_array = [self._length_of_psi(f) 
+    #         for f in range(start_frame, end_frame + 1, 2)]
+    #     return np.average(psi_array)
+    
+    # def _avg_length_of_singular_weighted_psi(self, start_frame, end_frame):
+    #     sw_psi_array = [self._length_of_singular_weighted_psi(f) 
+    #         for f in range(start_frame, end_frame + 1, 2)]
+    #     return np.average(sw_psi_array)
+    
+    def _avg_feature_vector(self, start_frame, end_frame):
+        v = self.vh.T
+        vectors = v[start_frame: end_frame]
+        return np.average(vectors, axis=0)
+
+    def _calc_shots_similarities(self):
+        assert self.shot_boundaries is not None
+        shot_first_frame = 0
+        shot_vectors = []
+        for shot_last_frame in self.shot_boundaries:
+            avg_feature_vector = self._avg_feature_vector(shot_first_frame, shot_last_frame)
+            shot_vectors.append(avg_feature_vector)
+            shot_first_frame = shot_last_frame + 1
+        len_shots = len(self.shot_boundaries)
+        similarities = [[np.linalg.norm(shot_vectors[i] - shot_vectors[j])
+             for j in range(len_shots)] for i in range(len_shots)]
+        import matplotlib.pyplot as plt
+        plt.imshow(similarities)
+        plt.show()
+        return similarities
+
+    def _get_shot(self, shot_idx):
+        assert self.shot_boundaries is not None
+        if shot_idx == 0:
+            return 0, self.shot_boundaries[shot_idx]
+        else:
+            return self.shot_boundaries[shot_idx - 1] + 1, self.shot_boundaries[shot_idx]
+    
+    def _get_shot_duration(self, shot_idx):
+        start, end = self._get_shot(shot_idx)
+        return end - start + 1
+
+    def _get_shot_set_duration(self, shot_indices):
+        shots_duration = [self._get_shot_duration(i) for i in shot_indices]
+        return np.sum(shots_duration)
+
+    def _get_longest_shot_idx(self):
+        shot_lengths = [self._get_shot_duration(i) for i in range(len(self.shot_boundaries))]
+        return np.argmax(shot_lengths)
+    
+    def _tag_content_ads(self, threshold=0.1):
+        # we assume the longest shot in a video is not ad
+        _longest_shot_idx = self._get_longest_shot_idx()
+        print('_longest_shot_idx =', _longest_shot_idx)
+        _similarity = np.array(self._calc_shots_similarities()[_longest_shot_idx])
+        print('_similarity = \n%s' % _similarity)
+        _one_class = np.where(_similarity < threshold)[0]
+        _other_class = np.where(_similarity >= threshold)[0]
+        if self._get_shot_set_duration(_one_class) > self._get_shot_set_duration(_other_class):
+            return _one_class, _other_class
+        else:
+            return _other_class, _one_class
+    
+    def get_all_shots(self):
+        return [self._get_shot(i) for i in range(len(self.shot_boundaries))]
+
+    def get_content_ads_shots(self):
+        content_shots = [self._get_shot(i) for i in self.content_shots]
+        ads_shots = [self._get_shot(i) for i in self.ads_shots]
+        return content_shots, ads_shots
 
     @staticmethod
     def get_feature_matrix_path(path_video_file):
