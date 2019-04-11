@@ -4,8 +4,9 @@ import math
 
 class VideoSegment:
 
-    DIFF_MAX = 40
-    DIFF_MIN = 30
+    FRAME_SIM_MAX = 40
+    FRAME_SIM_MIN = 30
+    SHOT_SIM_MIN = 0.06
     
     def __init__(self, path_video_file, frame_width, frame_height, use_saved=True):
         self.video_io = VideoIO(path_video_file, frame_width, frame_height)
@@ -23,7 +24,7 @@ class VideoSegment:
         print('shot_boundaries =\n%s' % self.shot_boundaries)
         self.content_shots, self.ads_shots = self._tag_content_ads()
 
-    def _diff_between_frames(self, frame_i, frame_j, kappa=150):
+    def _similariity_between_frames(self, frame_i, frame_j, kappa=150):
         s, v = self.s, self.vh.T
         diff_square = 0
         for idx in range(kappa):
@@ -33,15 +34,15 @@ class VideoSegment:
     def _is_shot_boundary(self, diff, frame_i):
         """Check if `frame_i` is the last frame of a shot"""
         assert frame_i < len(diff)
-        if frame_i == len(diff) - 1 or diff[frame_i + 1] >= self.DIFF_MAX:
+        if frame_i == len(diff) - 1 or diff[frame_i + 1] >= self.FRAME_SIM_MAX:
             return True, frame_i + 1
-        elif diff[frame_i + 1] < self.DIFF_MIN:
+        elif diff[frame_i + 1] < self.FRAME_SIM_MIN:
             return False, frame_i + 1
         else:
             x = frame_i + 2
-            while x + 1 < len(diff) and self._diff_between_frames(frame_i + 1, x) >= self.DIFF_MIN:
+            while x + 1 < len(diff) and self._similariity_between_frames(frame_i + 1, x) >= self.FRAME_SIM_MIN:
                 x += 1
-            if self._diff_between_frames(frame_i, x) < self.DIFF_MAX:
+            if self._similariity_between_frames(frame_i, x) < self.FRAME_SIM_MAX:
                 return True, x + 1
             else:
                 return False, frame_i + 1
@@ -50,7 +51,7 @@ class VideoSegment:
         shot_boundaries = []
         diff = [0 for _ in range(self.video_io.get_num_frames())]
         for frame in range(1, len(diff)):
-            diff[frame] = self._diff_between_frames(frame, frame - 1, kappa=80)
+            diff[frame] = self._similariity_between_frames(frame, frame - 1, kappa=60)
         frame = 0
         while frame < len(diff):
             is_shot_boundary, next = self._is_shot_boundary(diff, frame)
@@ -122,7 +123,7 @@ class VideoSegment:
         shot_lengths = [self._get_shot_duration(i) for i in range(len(self.shot_boundaries))]
         return np.argmax(shot_lengths)
     
-    def _tag_content_ads(self, threshold=0.1):
+    def _tag_content_ads(self, threshold=SHOT_SIM_MIN):
         # we assume the longest shot in a video is not ad
         _longest_shot_idx = self._get_longest_shot_idx()
         print('_longest_shot_idx =', _longest_shot_idx)

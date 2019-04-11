@@ -2,7 +2,7 @@ from video_segment import VideoSegment
 
 DATASETS = [
     {
-        'video': 'dataset1/Videos/data_test1.rgb', 
+        'video': 'dataset1/Videos/data_test1.rgb',
         'audio': 'dataset1/Videos/data_test1.wav',
         'width': 480,
         'height': 270
