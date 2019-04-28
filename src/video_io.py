@@ -48,3 +48,7 @@ class VideoIO:
         assert self.mode == 'r'
         frame_length = self.width * self.height * 3
         return int(self.file_size / frame_length)
+
+    def get_next_frame_idx(self):
+        frame_length = self.width * self.height * 3
+        return self.file.tell() / frame_length

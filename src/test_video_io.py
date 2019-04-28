@@ -15,14 +15,32 @@ DATASETS = [
     }
 ]
 
-dataset_idx = 1
+dataset_idx = 0
 dataset = DATASETS[dataset_idx]
 video_io = VideoIO(
     dataset['video'], dataset['width'], dataset['height'])
 
 
-def show(f):
-    video_io.seek_frame(f).show()
+def get_temp_dir():
+    return 'temp/'
+
+
+def get_frame_image_file_path(path_video_file, frame_idx):
+    import os
+    dirname = get_temp_dir()
+    if not os.path.exists(dirname): 
+        os.makedirs(dirname)
+    filename = os.path.basename(path_video_file)[:-4]
+    filename = '%s_%d.jpg' % (filename, frame_idx)
+    return os.path.join(dirname, filename)
+
+
+def show(f, save=False):
+    img = video_io.seek_frame(f)
+    img.show()
+    if save:
+        frame_idx = video_io.get_next_frame_idx() - 1
+        img.save(get_frame_image_file_path(video_io.file_path, frame_idx))
 
 
 def show_this_and_next(f):

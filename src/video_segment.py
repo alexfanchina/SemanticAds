@@ -1,4 +1,4 @@
-from video_io import VideoIO
+from src.video_io import VideoIO
 import numpy as np
 import math
 
@@ -6,7 +6,7 @@ class VideoSegment:
 
     FRAME_SIM_MAX = 40
     FRAME_SIM_MIN = 30
-    SHOT_SIM_MIN = 0.06
+    SHOT_SIM_MIN = 0.07
     
     def __init__(self, path_video_file, frame_width, frame_height, use_saved=True):
         self.video_io = VideoIO(path_video_file, frame_width, frame_height)
