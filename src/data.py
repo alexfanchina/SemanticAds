@@ -39,3 +39,8 @@ EXPECTED_SEGMENTS = [
         'ads_shots': [(0, 449), (6000, 6449)]
     }
 ]
+
+OUPUTS = [
+    'dataset1/Videos/data_test1_no_ads.rgb',
+    'dataset2/Videos/data_test2_no_ads.rgb'
+]

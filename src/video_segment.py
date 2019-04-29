@@ -145,12 +145,14 @@ class VideoSegment:
         return content_shots, ads_shots
     
     def save_content(self, filename):
+        print('Saving content...')
         frame_width = self.video_reader.width
         frame_height = self.video_reader.height
         self.video_writer = VideoIO(filename, frame_width, frame_height, 'w')
-        content, ads = self.get_content_ads_shots()
+        content, _ = self.get_content_ads_shots()
         for content_shot in content:
             start, end = content_shot
+            print('Writing frames [%d:%d]...' % (start, end))
             self.video_reader.seek(start)
             for i in range(end - start + 1):
                 self.video_writer.write_frame(self.video_reader.read_frame())

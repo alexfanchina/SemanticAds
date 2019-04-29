@@ -64,7 +64,7 @@ class VideoIO:
             raise EOFError('File is closed.')
         frame_size = self.width * self.height
         frame_length = frame_size * 3
-        image_bytes = image.tobytes()
+        image_bytes = np.array(bytearray(image.tobytes()), dtype='b')
         image_interleaved = np.zeros(frame_length, dtype='b')
         image_interleaved[0:frame_size] = image_bytes[0::3]
         image_interleaved[frame_size:frame_size*2] = image_bytes[1::3]
