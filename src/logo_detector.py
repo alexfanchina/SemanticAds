@@ -30,25 +30,25 @@ class LogoDetector:
         plt.imshow(img_match)
         plt.show()
 
-    def detect_orb(self, logo_path):
-        _logo = cv.imread(logo_path)
-        logo = cv.cvtColor(_logo, cv.COLOR_RGB2GRAY)
-        orb = cv.ORB_create()
-        kp_frame, des_frame = orb.detectAndCompute(self.frame, None)
-        kp_logo, des_logo = orb.detectAndCompute(logo, None)
-        bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
-        matches = bf.match(des_frame, des_logo)
-        matches = sorted(matches, key=lambda x: x.distance)
-        img3 = cv.drawMatches(self.frame, kp_frame, logo, kp_logo, matches[:20], None, flags=2)
-        plt.imshow(img3), plt.show()
+    # def detect_orb(self, logo_path):
+    #     _logo = cv.imread(logo_path)
+    #     logo = cv.cvtColor(_logo, cv.COLOR_RGB2GRAY)
+    #     orb = cv.ORB_create()
+    #     kp_frame, des_frame = orb.detectAndCompute(self.frame, None)
+    #     kp_logo, des_logo = orb.detectAndCompute(logo, None)
+    #     bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
+    #     matches = bf.match(des_frame, des_logo)
+    #     matches = sorted(matches, key=lambda x: x.distance)
+    #     img3 = cv.drawMatches(self.frame, kp_frame, logo, kp_logo, matches[:20], None, flags=2)
+    #     plt.imshow(img3), plt.show()
 
-    def apply_yellow_mask(self, logo):
-        ## apply yellow-pass mask to frame
-        yellowLower = (15, 80, 0)
-        yellowUpper = (63, 255, 255)
-        blurred = cv.GaussianBlur(self.frame, (11, 11), 0)
-        hsv = cv.cvtColor(blurred, cv.COLOR_RGB2HSV)
-        mask = cv.inRange(hsv, yellowLower, yellowUpper)
-        plt.imshow(mask), plt.show()
-        frame = mask
-        self.detect_sift(frame, logo)
+    # def apply_yellow_mask(self, logo):
+    #     ## apply yellow-pass mask to frame
+    #     yellowLower = (15, 80, 0)
+    #     yellowUpper = (63, 255, 255)
+    #     blurred = cv.GaussianBlur(self.frame, (11, 11), 0)
+    #     hsv = cv.cvtColor(blurred, cv.COLOR_RGB2HSV)
+    #     mask = cv.inRange(hsv, yellowLower, yellowUpper)
+    #     plt.imshow(mask), plt.show()
+    #     frame = mask
+    #     self.detect_sift(frame, logo)
