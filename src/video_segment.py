@@ -1,4 +1,5 @@
 from video_io import VideoIO
+from logger import logger
 import numpy as np
 import math
 
@@ -21,7 +22,7 @@ class VideoSegment:
         # print('shape(U) = %s, shape(s) = %s, shape(V.T) = %s' % (
         #     self.u.shape, self.s.shape, self.vh.shape))
         self.shot_boundaries = self._segment()
-        print('shot_boundaries =\n%s' % self.shot_boundaries)
+        logger.d('shot_boundaries', self.shot_boundaries)
         self.content_shots, self.ads_shots = self._tag_content_ads()
 
     def _similariity_between_frames(self, frame_i, frame_j, kappa=150):
@@ -61,7 +62,7 @@ class VideoSegment:
         import matplotlib.pyplot as plt
         plt.scatter(np.arange(len(diff)), diff, s=3)
         plt.show()
-        return shot_boundaries
+        return np.array(shot_boundaries, dtype=int)
     
     def _length_of_psi(self, frame_i):
         v = self.vh.T
@@ -126,9 +127,9 @@ class VideoSegment:
     def _tag_content_ads(self, threshold=SHOT_SIM_MIN):
         # we assume the longest shot in a video is not ad
         _longest_shot_idx = self._get_longest_shot_idx()
-        print('_longest_shot_idx =', _longest_shot_idx)
+        logger.d('_longest_shot_idx', _longest_shot_idx)
         _similarity = np.array(self._calc_shots_similarities()[_longest_shot_idx])
-        print('_similarity = \n%s' % _similarity)
+        logger.d('_similarity', _similarity)
         _one_class = np.where(_similarity < threshold)[0]
         _other_class = np.where(_similarity >= threshold)[0]
         if self._get_shot_set_duration(_one_class) > self._get_shot_set_duration(_other_class):
@@ -142,17 +143,17 @@ class VideoSegment:
     def get_content_ads_shots(self):
         content_shots = [self._get_shot(i) for i in self.content_shots]
         ads_shots = [self._get_shot(i) for i in self.ads_shots]
-        return content_shots, ads_shots
+        return np.array(content_shots, dtype='int,int'), np.array(ads_shots, dtype='int,int')
     
     def save_content(self, filename):
-        print('Saving content...')
+        logger.i('Saving content...')
         frame_width = self.video_reader.width
         frame_height = self.video_reader.height
         self.video_writer = VideoIO(filename, frame_width, frame_height, 'w')
         content, _ = self.get_content_ads_shots()
         for content_shot in content:
             start, end = content_shot
-            print('Writing frames [%d:%d]...' % (start, end))
+            logger.i('Writing frames [%d:%d]...' % (start, end))
             self.video_reader.seek(start)
             for i in range(end - start + 1):
                 self.video_writer.write_frame(self.video_reader.read_frame())
@@ -195,9 +196,9 @@ class VideoSegment:
     def get_feature_matrix(video_io):
         feature_matrix_A = []
         num_frames = video_io.get_num_frames()
-        print('Total # of frames = %d' % num_frames)
+        logger.d('Total # of frames', num_frames)
         for i in range(num_frames):
-            print('frame #%d' % i)
+            logger.i('frame #%d' % i)
             frame = video_io.read_frame()
             if frame is None:
                 break
@@ -205,7 +206,7 @@ class VideoSegment:
                 feature = VideoSegment.create_binned_histograms(frame)
                 feature_matrix_A.append(feature)
         feature_matrix_A = np.transpose(feature_matrix_A)
-        print('shape(A) =', feature_matrix_A.shape)
+        logger.d('shape(A)', feature_matrix_A.shape)
         return feature_matrix_A
         
 
