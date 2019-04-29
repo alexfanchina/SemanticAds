@@ -1,3 +1,6 @@
+import os
+os.chdir('..')
+
 DATASETS = [
     {
         'video': 'dataset1/Videos/data_test1.rgb',

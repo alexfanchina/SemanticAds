@@ -1,4 +1,4 @@
-from src.video_io import VideoIO
+from video_io import VideoIO
 import numpy as np
 import math
 
@@ -9,13 +9,13 @@ class VideoSegment:
     SHOT_SIM_MIN = 0.07
     
     def __init__(self, path_video_file, frame_width, frame_height, use_saved=True):
-        self.video_io = VideoIO(path_video_file, frame_width, frame_height)
+        self.video_reader = VideoIO(path_video_file, frame_width, frame_height)
         feature_matrix_path = VideoSegment.get_feature_matrix_path(
             path_video_file)
         if use_saved:
             self.feature_matrix_A = np.load(feature_matrix_path)
         else:
-            self.feature_matrix_A = VideoSegment.get_feature_matrix(self.video_io)
+            self.feature_matrix_A = VideoSegment.get_feature_matrix(self.video_reader)
             np.save(feature_matrix_path, self.feature_matrix_A)
         self.u, self.s, self.vh = np.linalg.svd(self.feature_matrix_A, full_matrices=False)
         # print('shape(U) = %s, shape(s) = %s, shape(V.T) = %s' % (
@@ -49,7 +49,7 @@ class VideoSegment:
     
     def _segment(self):
         shot_boundaries = []
-        diff = [0 for _ in range(self.video_io.get_num_frames())]
+        diff = [0 for _ in range(self.video_reader.get_num_frames())]
         for frame in range(1, len(diff)):
             diff[frame] = self._similariity_between_frames(frame, frame - 1, kappa=60)
         frame = 0
@@ -143,6 +143,17 @@ class VideoSegment:
         content_shots = [self._get_shot(i) for i in self.content_shots]
         ads_shots = [self._get_shot(i) for i in self.ads_shots]
         return content_shots, ads_shots
+    
+    def save_content(self, filename):
+        frame_width = self.video_reader.width
+        frame_height = self.video_reader.height
+        self.video_writer = VideoIO(filename, frame_width, frame_height, 'w')
+        content, ads = self.get_content_ads_shots()
+        for content_shot in content:
+            start, end = content_shot
+            self.video_reader.seek(start)
+            for i in range(end - start + 1):
+                self.video_writer.write_frame(self.video_reader.read_frame())
 
     @staticmethod
     def get_feature_matrix_path(path_video_file):

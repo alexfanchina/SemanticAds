@@ -1,8 +1,7 @@
 import numpy as np
-from src.data import DATASETS as DATASETS
-from src.data import EXPECTED_SEGMENTS as EXPECTED
-from src.video_segment import VideoSegment
-
+from data import DATASETS as DATASETS
+from data import EXPECTED_SEGMENTS as EXPECTED
+from video_segment import VideoSegment
 
 def in_shots(s, shots):
     if type(shots) is tuple:

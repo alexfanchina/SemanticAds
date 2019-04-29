@@ -1,0 +1,5 @@
+{
+    "python.linting.enabled": true,
+    "terminal.integrated.cwd": "./src",
+    "terminal.integrated.splitCwd": "inherited"
+}
