@@ -5,6 +5,7 @@
 import os
 import numpy as np
 from PIL import Image
+from logger import logger
 
 class VideoIO: 
     def __init__(self, path, width, height, mode='r'):
@@ -24,7 +25,7 @@ class VideoIO:
                 self.file_path, 'rb' if self.mode == 'r' else 'wb')
         offset = self.width * self.height * 3 * frame_index
         self.file.seek(offset)
-        print('File current position =', self.file.tell())
+        logger.d('file current position', self.file.tell())
 
     def _read_frame_bytes(self):
         frame_size = self.width * self.height
