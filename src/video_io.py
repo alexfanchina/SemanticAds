@@ -74,6 +74,7 @@ class VideoIO:
         image_interleaved[0:frame_size] = image_bytes[0::3]
         image_interleaved[frame_size:frame_size*2] = image_bytes[1::3]
         image_interleaved[frame_size*2:frame_size*3] = image_bytes[2::3]
+        self.file.write(bytes(image_interleaved))
 
     def get_next_frame_idx(self):
         frame_length = self.width * self.height * 3

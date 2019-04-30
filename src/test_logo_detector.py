@@ -6,19 +6,15 @@ from video_io import VideoIO
 from logo_detector import LogoDetector
 from PIL import Image
 from data import DATASETS as DATASETS
-from data import BRANDS_LOGO
+from data import BRANDS
 from logger import logger
 
 logger.set_level('i')
 
 # initializing
 dataset_idx = 0
-logo_name = 'subway'
 dataset = DATASETS[dataset_idx]
-logo_frame = dataset['brand_frames'][logo_name]
-brands_to_detect = {k: BRANDS_LOGO[k] for k in dataset['brands_to_detect']}
-
-# get image
+brands_to_detect = {k: BRANDS[k]['logo'] for k in dataset['brands_to_detect']}
 video_io = VideoIO(dataset['video'], dataset['width'], dataset['height'])
 
 # detect

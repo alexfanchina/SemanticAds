@@ -1,7 +1,8 @@
 import numpy as np
-from data import DATASETS as DATASETS
-from data import EXPECTED_SEGMENTS as EXPECTED
+from test_data import DATASETS as DATASETS
+from test_data import EXPECTED_SEGMENTS as EXPECTED
 from video_segment import VideoSegment
+from logger import logger
 
 def in_shots(s, shots):
     if type(shots) is tuple:
@@ -27,11 +28,10 @@ dataset = DATASETS[dataset_idx]
 video_segment = VideoSegment(dataset['video'], dataset['width'], dataset['height'])
 content, ads = video_segment.get_content_ads_shots()
 
-print('Segment Results')
 content_expected, ads_expected = get_expected_indices(
     video_segment.get_all_shots(), EXPECTED[dataset_idx]['content_shots'])
-print('shots:\n%s' % np.array(video_segment.get_all_shots()))
-print('content:\t%s' % video_segment.content_shots)
-print('content_expected:\t%s' % content_expected)
-print('ads:\t%s' % video_segment.ads_shots)
-print('ads_expected:\t%s' % ads_expected)
+logger.d('shots', np.array(video_segment.get_all_shots()))
+logger.d('content', video_segment.content_shots)
+logger.d('content_expected', content_expected)
+logger.d('ads', video_segment.ads_shots)
+logger.d('ads_expected', ads_expected)

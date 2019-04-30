@@ -161,6 +161,7 @@ class VideoSegment:
             for i in range(size):
                 self.video_writer.write_frame(self.video_reader.read_frame())
             self.audio_writer.copy_frames(start, size)
+        self.video_writer.close()
         self.audio_writer.close()
 
     @staticmethod
