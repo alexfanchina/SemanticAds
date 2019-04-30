@@ -20,7 +20,7 @@ class VideoIO:
             self.file_size = os.path.getsize(self.file_path)
 
     def seek(self, frame_index):
-        if self.file.closed:
+        if self.file.closed:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
             self.file = open(
                 self.file_path, 'rb' if self.mode == 'r' else 'wb')
         offset = self.width * self.height * 3 * frame_index
@@ -53,6 +53,10 @@ class VideoIO:
         else:
             self.file.close()
             return None
+    
+    def skip_frame(self, num_of_frames=1):
+        seek_frame = self.get_next_frame_idx() + num_of_frames
+        self.seek(seek_frame)
 
     def get_num_frames(self):
         assert self.mode == 'r'
@@ -73,7 +77,7 @@ class VideoIO:
 
     def get_next_frame_idx(self):
         frame_length = self.width * self.height * 3
-        return self.file.tell() / frame_length
+        return int(self.file.tell() / frame_length)
     
     def close(self):
         self.file.close()

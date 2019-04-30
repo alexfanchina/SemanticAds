@@ -1,4 +1,5 @@
 from video_io import VideoIO
+from audio_io import AudioIO
 from logger import logger
 import numpy as np
 import math
@@ -145,18 +146,22 @@ class VideoSegment:
         ads_shots = [self._get_shot(i) for i in self.ads_shots]
         return np.array(content_shots, dtype='int,int'), np.array(ads_shots, dtype='int,int')
     
-    def save_content(self, filename):
+    def save_content(self, video_output, audio_input, audio_output):
         logger.i('Saving content...')
         frame_width = self.video_reader.width
         frame_height = self.video_reader.height
-        self.video_writer = VideoIO(filename, frame_width, frame_height, 'w')
+        self.video_writer = VideoIO(video_output, frame_width, frame_height, 'w')
+        self.audio_writer = AudioIO(audio_input, audio_output, 30)
         content, _ = self.get_content_ads_shots()
         for content_shot in content:
             start, end = content_shot
+            size = end - start + 1
             logger.i('Writing frames [%d:%d]...' % (start, end))
             self.video_reader.seek(start)
-            for i in range(end - start + 1):
+            for i in range(size):
                 self.video_writer.write_frame(self.video_reader.read_frame())
+            self.audio_writer.copy_frames(start, size)
+        self.audio_writer.close()
 
     @staticmethod
     def get_feature_matrix_path(path_video_file):

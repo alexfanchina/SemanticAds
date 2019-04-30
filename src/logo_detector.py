@@ -2,8 +2,12 @@ import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 from logger import logger
+import util
 
 class LogoDetector:
+
+    MIN_MATCH_COUNT = 10
+    MIN_RANSAC_MATCH_COUNT = 5
 
     def __init__(self, logo_paths):
         self.logos = []
@@ -20,20 +24,65 @@ class LogoDetector:
                 'descriptor': des_logo}
             self.logos.append(logo)
     
+    def _sift_match(self, logo, frame_img):
+        logo_name, logo_img = logo['name'], logo['img']
+        kp_logo, des_logo = logo['keypoints'], logo['descriptor']
+        logger.d('logo_name', logo_name)
+        kp_frame, des_frame = self.sift.detectAndCompute(frame_img, None)
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+        search_params = dict(checks=50)
+        flann = cv.FlannBasedMatcher(index_params, search_params)
+        matches = flann.knnMatch(des_logo, des_frame, k=2)
+        good = []
+        for m, n in matches:
+            if m.distance < 0.75*n.distance:
+                good.append(m)
+        if len(good) > LogoDetector.MIN_MATCH_COUNT:
+            src_pts = np.float32(
+                [kp_logo[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+            dst_pts = np.float32(
+                [kp_frame[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
+            M, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)
+            matchesMask = mask.ravel().tolist()
+            len_mask = np.count_nonzero(matchesMask)
+            if len_mask > LogoDetector.MIN_RANSAC_MATCH_COUNT:
+                logger.d('np.count_nonzero(matchesMask)', len_mask)
+                h, w = logo_img.shape
+                pts = np.float32([[0, 0], [0, h-1], [w-1, h-1],
+                                [w-1, 0]]).reshape(-1, 1, 2)
+                dst = cv.perspectiveTransform(pts, M)
+                logger.d('dst', dst)
+                poly = np.int32(dst).reshape(4, 2)
+                if util.valid_poly(poly):
+                    # frame_img = cv.polylines(frame_img, [np.int32(dst)], True, 255, 3, cv.LINE_AA)
+                    # draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
+                    #                 singlePointColor=None,
+                    #                 matchesMask=matchesMask,  # draw only inliers
+                    #                 flags=2)
+                    # img3 = cv.drawMatches(
+                    #     logo_img, kp_logo, frame_img, kp_frame, good, None, **draw_params)
+                    # plt.imshow(img3, 'gray'), plt.show()
+                    return poly
+                else:
+                    logger.d("Polygon not valid")
+            else:
+                logger.d("Not enough matches after ransac: %d/%d" %
+                         (len_mask, LogoDetector.MIN_RANSAC_MATCH_COUNT))
+        else:
+            logger.d("Not enough matches are found: %d/%d" %
+                     (len(good), LogoDetector.MIN_MATCH_COUNT))
+            matchesMask = None
+        return None
+    
     def detect(self, frame_image):
         _frame = np.array(frame_image)
         frame = cv.cvtColor(_frame, cv.COLOR_RGB2GRAY)
-        kp_frame, des_frame = self.sift.detectAndCompute(frame, None)
+        brand_areas = []
         for logo in self.logos:
-            logo_name, logo_img, kp_logo, des_logo = logo['name'], logo['img'], logo['keypoints'], logo['descriptor']
-            logger.d('logo_name', logo_name)
-            bf = cv.BFMatcher(cv.NORM_L2, False)
-            matches = bf.knnMatch(des_frame, des_logo, k=2)
-            good = []
-            for m, n in matches:
-                if m.distance < 0.75*n.distance:
-                    good.append([m])
-            img_match = cv.drawMatchesKnn(frame, kp_frame, logo_img, kp_logo, good, None, flags=2)
-            plt.imshow(img_match)
-            plt.show()
+            poly = self._sift_match(logo, frame)
+            if poly is not None:
+                brand_areas.append((logo['name'], poly))
+        return brand_areas
+
     

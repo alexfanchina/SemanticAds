@@ -7,6 +7,7 @@ DATASETS = [
         'audio': 'dataset1/Videos/data_test1.wav',
         'width': 480,
         'height': 270,
+        'brands_to_detect': ['subway', 'starbucks'],
         'brand_frames': {
             'subway': 2129,
             'starbucks': 5300
@@ -16,9 +17,10 @@ DATASETS = [
         'audio': 'dataset2/Videos/data_test2.wav',
         'width': 480,
         'height': 270,
+        'brands_to_detect': ['mcdonalds', 'nfl'],
         'brand_frames': {
             'mcdonalds': 4400,
-            'nfl': -1
+            'nfl': 2250
         }
     }
 ]
@@ -41,6 +43,11 @@ EXPECTED_SEGMENTS = [
 ]
 
 OUPUTS = [
-    'dataset1/Videos/data_test1_no_ads.rgb',
-    'dataset2/Videos/data_test2_no_ads.rgb'
+    {
+        'video': 'dataset1/Videos/data_test1_no_ads.rgb',
+        'audio': 'dataset1/Videos/data_test1_no_ads.wav'
+    }, {
+        'video': 'dataset2/Videos/data_test2_no_ads.rgb',
+        'audio': 'dataset2/Videos/data_test2_no_ads.wav'
+    }
 ]

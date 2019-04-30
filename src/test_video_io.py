@@ -3,7 +3,7 @@ from video_io import VideoIO
 from data import DATASETS as DATASETS
 from PIL import Image
 
-dataset_idx = 0
+dataset_idx = 1
 dataset = DATASETS[dataset_idx]
 video_io = VideoIO(
     dataset['video'], dataset['width'], dataset['height'])
@@ -37,3 +37,7 @@ def show_this_and_next(f):
         new_im.paste(im, (x_offset, 0))
         x_offset += im.size[0]
     new_im.show()
+
+
+if __name__ == "__main__":
+    show(2250)
