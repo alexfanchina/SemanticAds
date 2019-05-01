@@ -94,6 +94,8 @@ class VideoLogoDetect:
             start = pos + 1
         output_video_writer.copy_frames_from(video_input, start)
         output_audio_writer.copy_frames(start)
+        output_video_writer.close()
+        output_audio_writer.close()
         logger.i('Video with new ads saved to (%s, %s)' % (video_output, audio_output))
         logo_data_with_ads = self._logo_data_with_ads()
         logo_data_path = path_util.get_video_logo_data_path(video_output)

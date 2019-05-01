@@ -31,7 +31,7 @@ class AudioIO:
         start_index = int(start_frame / self.fps * self.output_file.getframerate())
         chunk = int(num_of_frames / self.fps * self.output_file.getframerate())
         from_file.setpos(start_index)
-        frames_data = self.audio_file.readframes(chunk)
+        frames_data = from_file.readframes(chunk)
         self.output_file.writeframes(frames_data)
 
     def close(self):
@@ -39,8 +39,11 @@ class AudioIO:
 
 
 if __name__ == "__main__":
-    audio_io = AudioIO(sys.argv[1], sys.argv[2], 30)
+    source = '../dataset1/Videos/data_test1.wav'
+    dest = '../temp/test.wav'
+    ad = '../dataset1/Ads/Subway_Ad_15s.wav'
+    audio_io = AudioIO(source, dest, 30)
     audio_io.copy_frames(0, 90)
-    # audio_io.copy_frames(90, 90)
-    audio_io.copy_frames_from(sys.argv[1], 90, 180)
+    audio_io.copy_frames_from(ad)
+    audio_io.copy_frames(90, 90)
     audio_io.close()
