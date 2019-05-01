@@ -1,12 +1,13 @@
 import os
 from video_io import VideoIO
-from data import DATASETS as DATASETS
+from data import DATASETS
+from data import OUPUTS
 from PIL import Image
 
 dataset_idx = 0
 dataset = DATASETS[dataset_idx]
 video_io = VideoIO(
-    dataset['video'], dataset['width'], dataset['height'])
+    OUPUTS[dataset_idx]['new_ads']['video'], dataset['width'], dataset['height'])
 
 def get_temp_dir():
     return 'temp/'
@@ -40,4 +41,4 @@ def show_this_and_next(f):
 
 
 if __name__ == "__main__":
-    show(4012)
+    show(5196)
