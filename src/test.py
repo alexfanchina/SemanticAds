@@ -5,18 +5,18 @@ from logger import logger
 from video_io import VideoIO
 from logo_detector import LogoDetector
 from PIL import Image
-from data import DATASETS as DATASETS
-from data import BRANDS_LOGO as BRANDS
+from test_data import DATASETS as DATASETS
+from test_data import BRANDS
 
 MIN_MATCH_COUNT = 10
 MIN_RANSAC_MATCH_COUNT = 5
 
 
-dataset_idx = 1
-logo_name = 'nfl'
+dataset_idx = 2
+logo_name = 'ae'
 dataset = DATASETS[dataset_idx]
 logo_frame = dataset['brand_frames'][logo_name]
-logo_path = BRANDS[logo_name]
+logo_path = BRANDS[logo_name]['logo']
 
 video_io = VideoIO(dataset['video'], dataset['width'], dataset['height'])
 pil_image = video_io.read_frame(logo_frame).convert('RGB')
@@ -56,7 +56,7 @@ if len(good) > MIN_MATCH_COUNT:
         pts = np.float32([[0, 0], [0, h-1], [w-1, h-1],
                             [w-1, 0]]).reshape(-1, 1, 2)
         dst = cv.perspectiveTransform(pts, M)
-        logger.d('dst', np.int32(dst))
+        logger.d('dst', np.int32(dst).reshape(4,2).tolist())
         print( )
         img2 = cv.polylines(img2, [np.int32(dst)], True, 255, 3, cv.LINE_AA)
         draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color

@@ -22,6 +22,16 @@ DATASETS = [
             'mcdonalds': 4400,
             'nfl': 2250
         }
+    }, {
+        'video': 'dataset3/Videos/data_test3.rgb',
+        'audio': 'dataset3/Videos/data_test3.wav',
+        'width': 480,
+        'height': 270,
+        'brands_to_detect': ['ae', 'hrc'],
+        'brand_frames': {
+            'ae': 2490,
+            'hrc': 6700
+        }
     }
 ]
 
@@ -52,6 +62,20 @@ BRANDS = {
         'ad': {
             'video': 'dataset2/Ads/nfl_Ad_15s.rgb',
             'audio': 'dataset2/Ads/nfl_Ad_15s.wav'
+        }
+    },
+    'ae': {
+        'logo': 'dataset3/Brand Images/ae_logo.bmp',
+        'ad': {
+            'video': 'dataset3/Ads/ae_ad_15s.rgb',
+            'audio': 'dataset3/Ads/ae_ad_15s.wav'
+        }
+    },
+    'hrc': {
+        'logo': 'dataset3/Brand Images/hrc_logo.bmp',
+        'audio': {
+            'video': 'dataset3/Ads/hrc_ad_15s.rgb',
+            'audio': 'dataset3/Ads/hrc_ad_15s.wav'
         }
     }
 }

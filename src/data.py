@@ -14,6 +14,12 @@ DATASETS = [
         'width': 480,
         'height': 270,
         'brands_to_detect': ['mcdonalds', 'nfl']
+    }, {
+        'video': 'dataset3/Videos/data_test3.rgb',
+        'audio': 'dataset3/Videos/data_test3.wav',
+        'width': 480,
+        'height': 270,
+        'brands_to_detect': ['ae', 'hrc']
     }
 ]
 
@@ -45,6 +51,20 @@ BRANDS = {
             'video': 'dataset2/Ads/nfl_Ad_15s.rgb',
             'audio': 'dataset2/Ads/nfl_Ad_15s.wav'
         }
+    },
+    'ae': {
+        'logo': 'dataset3/Brand Images/ae_logo.bmp',
+        'ad': {
+            'video': 'dataset3/Ads/ae_ad_15s.rgb',
+            'audio': 'dataset3/Ads/ae_ad_15s.wav'
+        }
+    }, 
+    'hrc': {
+        'logo': 'dataset3/Brand Images/hrc_logo.bmp',
+        'audio': {
+            'video': 'dataset3/Ads/hrc_ad_15s.rgb',
+            'audio': 'dataset3/Ads/hrc_ad_15s.wav'
+        }
     }
 }
 
@@ -66,6 +86,15 @@ OUPUTS = [
         'new_ads': {
             'video': 'dataset2/Videos/data_test2_new.rgb',
             'audio': 'dataset2/Videos/data_test2_new.wav'
+        }
+    }, {
+        'no_ads': {
+            'video': 'dataset3/Videos/data_test3_no_ads.rgb',
+            'audio': 'dataset3/Videos/data_test3_no_ads.wav'
+        },
+        'new_ads': {
+            'video': 'dataset3/Videos/data_test3_new.rgb',
+            'audio': 'dataset3/Videos/data_test3_new.wav'
         }
     }
 ]

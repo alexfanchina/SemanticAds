@@ -3,7 +3,7 @@ from video_io import VideoIO
 from data import DATASETS as DATASETS
 from PIL import Image
 
-dataset_idx = 1
+dataset_idx = 2
 dataset = DATASETS[dataset_idx]
 video_io = VideoIO(
     dataset['video'], dataset['width'], dataset['height'])
@@ -40,4 +40,4 @@ def show_this_and_next(f):
 
 
 if __name__ == "__main__":
-    show(2250)
+    show(6700)
