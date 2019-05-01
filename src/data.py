@@ -61,7 +61,7 @@ BRANDS = {
     }, 
     'hrc': {
         'logo': 'dataset3/Brand Images/hrc_logo.bmp',
-        'audio': {
+        'ad': {
             'video': 'dataset3/Ads/hrc_ad_15s.rgb',
             'audio': 'dataset3/Ads/hrc_ad_15s.wav'
         }

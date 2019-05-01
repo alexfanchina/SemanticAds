@@ -43,7 +43,7 @@ class LogoDetector:
                 [kp_logo[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
             dst_pts = np.float32(
                 [kp_frame[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-            M, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)
+            M, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 1.0)
             matchesMask = mask.ravel().tolist()
             len_mask = np.count_nonzero(matchesMask)
             if len_mask > LogoDetector.MIN_RANSAC_MATCH_COUNT:

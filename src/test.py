@@ -7,6 +7,7 @@ from logo_detector import LogoDetector
 from PIL import Image
 from test_data import DATASETS as DATASETS
 from test_data import BRANDS
+import util
 
 MIN_MATCH_COUNT = 10
 MIN_RANSAC_MATCH_COUNT = 5
@@ -16,13 +17,13 @@ dataset_idx = 2
 logo_name = 'ae'
 dataset = DATASETS[dataset_idx]
 logo_frame = dataset['brand_frames'][logo_name]
+logo_frame = 2501
 logo_path = BRANDS[logo_name]['logo']
 
 video_io = VideoIO(dataset['video'], dataset['width'], dataset['height'])
 pil_image = video_io.read_frame(logo_frame).convert('RGB')
 _frame = np.array(pil_image)
 frame_img = cv.cvtColor(_frame, cv.COLOR_RGB2GRAY)
-
 _logo_img = cv.imread(logo_path)
 logo_img = cv.cvtColor(_logo_img, cv.COLOR_RGB2GRAY)
 
@@ -47,7 +48,7 @@ if len(good) > MIN_MATCH_COUNT:
         [kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
     dst_pts = np.float32(
         [kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-    M, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)
+    M, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 1.0)
     matchesMask = mask.ravel().tolist()
     len_mask = np.count_nonzero(matchesMask)
     if len_mask > MIN_RANSAC_MATCH_COUNT:
@@ -57,7 +58,8 @@ if len(good) > MIN_MATCH_COUNT:
                             [w-1, 0]]).reshape(-1, 1, 2)
         dst = cv.perspectiveTransform(pts, M)
         logger.d('dst', np.int32(dst).reshape(4,2).tolist())
-        print( )
+        logger.d('if_all_clockwise(dst)', util.if_all_clockwise(dst))
+        logger.d('if_not_slim(dst)', util.if_not_slim(dst))
         img2 = cv.polylines(img2, [np.int32(dst)], True, 255, 3, cv.LINE_AA)
         draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
                            singlePointColor=None,

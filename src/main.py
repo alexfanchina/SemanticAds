@@ -42,7 +42,7 @@ def detect_and_insert_ads(dataset_idx):
 
 
 if __name__ == "__main__":
-    logger.set_level('d')
-    dataset = 0
+    logger.set_level('i')
+    dataset = 2
     # remove_ads(dataset)
     detect_and_insert_ads(dataset)

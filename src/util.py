@@ -40,7 +40,7 @@ def if_not_slim(poly):
     x1, y1, x2, y2, x3, y3, x4, y4 = np.array(poly).flatten()
     d1 = distance(x1, y1, x2, y2, x3, y3)+distance(x1, y1, x4, y4, x3, y3)
     d2 = distance(x2, y2, x3, y3, x4, y4)+distance(x2, y2, x1, y1, x4, y4)
-    if d1 > 10*d2 or d2 > 10*d1 or d1 < 20 or d2 < 20:
+    if d1 > 10*d2 or d2 > 10*d1 or d1 < 3 or d2 < 3:
         return False
     else:
         return True

@@ -9,7 +9,7 @@ import path_util
 
 class VideoLogoDetect:
 
-    SKIP_FRAME = 20
+    SKIP_FRAME = 2
 
     def __init__(self, path_video_file, frame_width, frame_height, brands_to_detect):
         self.video_path = path_video_file
@@ -91,7 +91,7 @@ class VideoLogoDetect:
             logger.i('Writing ads [%s]...' % ad_name)
             output_video_writer.copy_frames_from(ad['video'])
             output_audio_writer.copy_frames_from(ad['audio'])
-            start = pos
+            start = pos + 1
         output_video_writer.copy_frames_from(video_input, start)
         output_audio_writer.copy_frames(start)
         logger.i('Video with new ads saved to (%s, %s)' % (video_output, audio_output))

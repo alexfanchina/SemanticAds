@@ -3,6 +3,7 @@ from audio_io import AudioIO
 from logger import logger
 import numpy as np
 import math
+import os
 
 class VideoSegment:
 
@@ -14,7 +15,7 @@ class VideoSegment:
         self.video_reader = VideoIO(path_video_file, frame_width, frame_height)
         feature_matrix_path = VideoSegment.get_feature_matrix_path(
             path_video_file)
-        if use_saved:
+        if use_saved and os.path.exists(feature_matrix_path):
             self.feature_matrix_A = np.load(feature_matrix_path)
         else:
             self.feature_matrix_A = VideoSegment.get_feature_matrix(self.video_reader)
@@ -87,7 +88,7 @@ class VideoSegment:
     
     def _avg_feature_vector(self, start_frame, end_frame):
         v = self.vh.T
-        vectors = v[start_frame: end_frame]
+        vectors = v[start_frame: end_frame + 1]
         return np.average(vectors, axis=0)
 
     def _calc_shots_similarities(self):
