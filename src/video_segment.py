@@ -35,7 +35,8 @@ class VideoSegment:
         return math.sqrt(diff_square)
     
     def _is_shot_boundary(self, diff, frame_i):
-        """Check if `frame_i` is the last frame of a shot"""
+        """Check if `frame_i` is the last frame of a shot
+        """
         assert frame_i < len(diff)
         if frame_i == len(diff) - 1 or diff[frame_i + 1] >= self.FRAME_SIM_MAX:
             return True, frame_i + 1
@@ -148,7 +149,7 @@ class VideoSegment:
         return np.array(content_shots, dtype='int,int'), np.array(ads_shots, dtype='int,int')
     
     def save_content(self, video_output, audio_input, audio_output):
-        logger.i('Saving content...')
+        logger.i('Saving content shots to %s...' % video_output)
         frame_width = self.video_reader.width
         frame_height = self.video_reader.height
         self.video_writer = VideoIO(video_output, frame_width, frame_height, 'w')
@@ -205,7 +206,7 @@ class VideoSegment:
         num_frames = video_io.get_num_frames()
         logger.d('Total # of frames', num_frames)
         for i in range(num_frames):
-            logger.i('frame #%d' % i)
+            logger.i('Getting feature matrix for frame #%d...' % i)
             frame = video_io.read_frame()
             if frame is None:
                 break
