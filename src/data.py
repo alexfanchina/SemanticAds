@@ -50,10 +50,22 @@ BRANDS = {
 
 OUPUTS = [
     {
-        'video': 'dataset1/Videos/data_test1_no_ads.rgb',
-        'audio': 'dataset1/Videos/data_test1_no_ads.wav'
+        'no_ads': {
+            'video': 'dataset1/Videos/data_test1_no_ads.rgb',
+            'audio': 'dataset1/Videos/data_test1_no_ads.wav'
+        }, 
+        'new_ads': {
+            'video': 'dataset1/Videos/data_test1_new.rgb',
+            'audio': 'dataset1/Videos/data_test1_new.wav'
+        }
     }, {
-        'video': 'dataset2/Videos/data_test2_no_ads.rgb',
-        'audio': 'dataset2/Videos/data_test2_no_ads.wav'
+        'no_ads': {
+            'video': 'dataset2/Videos/data_test2_no_ads.rgb',
+            'audio': 'dataset2/Videos/data_test2_no_ads.wav'
+        }, 
+        'new_ads': {
+            'video': 'dataset2/Videos/data_test2_new.rgb',
+            'audio': 'dataset2/Videos/data_test2_new.wav'
+        }
     }
 ]

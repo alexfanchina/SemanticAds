@@ -5,7 +5,7 @@ from logger import logger
 
 dataset_idx = 0
 dataset = DATASETS[dataset_idx]
-output = OUPUTS[dataset_idx]
+output = OUPUTS[dataset_idx]['no_ads']
 video_segment = VideoSegment(dataset['video'], dataset['width'], dataset['height'])
 content, ads = video_segment.get_content_ads_shots()
 logger.d('content', content)
