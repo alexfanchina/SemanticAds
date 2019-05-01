@@ -13,10 +13,12 @@ from logger import logger
 
 
 class Player:
-    def __init__(self, audio_path, video_path, point_path, width, height, fps):
+    def __init__(self, audio_path, video_path, width, height, fps):
         self.logo_index = 0
+        point_path = str.split(sys.argv[1], '.rgb')[0]+'.pkl'
         if os.path.exists(point_path):
             self.logo_array = pickle.load(open(point_path, "rb"))
+            logger.i('Loaded logo positions from % s' % point_path)
         else:
             self.logo_array = []
         self.f = wave.open(audio_path, "rb")
@@ -149,5 +151,4 @@ if __name__ == "__main__":
     width = 480
     height = 270
     fps = 30
-    point_path = str.split(sys.argv[1], '.rgb')[0]+'.pkl'
-    player = Player(sys.argv[2], sys.argv[1], point_path, width, height, fps)
+    player = Player(sys.argv[2], sys.argv[1], width, height, fps)
