@@ -12,7 +12,7 @@ import pickle
 from logger import logger
 
 
-class Player:
+class VideoPlayer:
     def __init__(self, audio_path, video_path, width, height, fps):
         self.logo_index = 0
         point_path = str.split(sys.argv[1], '.rgb')[0]+'.pkl'
@@ -101,12 +101,15 @@ class Player:
             # (index,logo, points)
             if(len(self.logo_array) > self.logo_index and (self.index-self.logo_array[self.logo_index][0]) < 2 and (self.index-self.logo_array[self.logo_index][0]) > -1):
                 points = np.array(self.logo_array[self.logo_index][2])
-                self.label1.configure(text=self.logo_array[self.logo_index][1])
+                logo_name = self.logo_array[self.logo_index][1]
+                self.label1.configure(text=logo_name)
                 self.pilImage = cv2.cvtColor(
                     np.asarray(self.pilImage), cv2.COLOR_RGB2BGR)
                 cv2.polylines(self.pilImage, [points], 1, (0, 0, 255), 5)
                 self.pilImage = Image.fromarray(
                     cv2.cvtColor(self.pilImage, cv2.COLOR_BGR2RGB))
+                logger.i('Showing logo box [%s] at %s' %
+                         (logo_name, points.tolist()))
                 self.logo_index = self.logo_index+1
             self.tkImage = ImageTk.PhotoImage(image=self.pilImage)
             self.label2.configure(imag=self.tkImage)
@@ -147,9 +150,10 @@ class Player:
         self.root.update_idletasks()
         self.read_wav()
 
+
 if __name__ == "__main__":
     logger.set_level('i')
     width = 480
     height = 270
     fps = 30
-    player = Player(sys.argv[2], sys.argv[1], width, height, fps)
+    player = VideoPlayer(sys.argv[2], sys.argv[1], width, height, fps)
