@@ -52,7 +52,6 @@ class Player:
         self.button_fast_forword = Button(
             self.root, text='>>', command=self.fast_forword)
         self.button_stop = Button(self.root, text='STOP', command=self.stop)
-
         self.button_fast_backword.pack(side=LEFT)
         self.button_play.pack(side=LEFT)
         self.button_pause.pack(side=LEFT)
@@ -60,6 +59,7 @@ class Player:
         self.button_stop.pack(side=LEFT)
         self.label1 = Label(self.root, text="")
         self.label1.pack(side=RIGHT)
+        self.root.title('Video Player')
         self.root.mainloop()
 
     def fast_forword(self):
@@ -69,6 +69,7 @@ class Player:
             self.index = self.frameNum-1
         while len(self.logo_array) > self.logo_index and self.index > self.logo_array[self.logo_index][0]:
             self.logo_index = self.logo_index+1
+        self.start()
 
     def fast_backword(self):
         self.index = self.index-150  # 5s
@@ -100,13 +101,13 @@ class Player:
             # (index,logo, points)
             if(len(self.logo_array) > self.logo_index and (self.index-self.logo_array[self.logo_index][0]) < 2 and (self.index-self.logo_array[self.logo_index][0]) > -1):
                 points = np.array(self.logo_array[self.logo_index][2])
+                self.label1.configure(text=self.logo_array[self.logo_index][1])
                 self.pilImage = cv2.cvtColor(
                     np.asarray(self.pilImage), cv2.COLOR_RGB2BGR)
                 cv2.polylines(self.pilImage, [points], 1, (0, 0, 255), 5)
                 self.pilImage = Image.fromarray(
                     cv2.cvtColor(self.pilImage, cv2.COLOR_BGR2RGB))
                 self.logo_index = self.logo_index+1
-                self.label1.configure(text=self.logo_array[self.logo_index][1])
             self.tkImage = ImageTk.PhotoImage(image=self.pilImage)
             self.label2.configure(imag=self.tkImage)
 
