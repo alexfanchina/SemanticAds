@@ -118,7 +118,6 @@ class Player:
          
 
 if __name__ == "__main__":
-
     width = 480
     height =270
     fps = 30

@@ -26,6 +26,9 @@ class VideoIO:
         offset = self.width * self.height * 3 * frame_index
         self.file.seek(offset)
         logger.d('file current position', self.file.tell())
+    
+    def reset(self):
+        self.seek(0)
 
     def _read_frame_bytes(self):
         frame_size = self.width * self.height
@@ -75,6 +78,15 @@ class VideoIO:
         image_interleaved[frame_size:frame_size*2] = image_bytes[1::3]
         image_interleaved[frame_size*2:frame_size*3] = image_bytes[2::3]
         self.file.write(bytes(image_interleaved))
+    
+    def copy_frames_from(self, input_path, start_frame=0, num_of_frames=None):
+        reader = VideoIO(input_path, self.width, self.height, 'r')
+        reader.seek(start_frame)
+        end_frame = reader.get_num_frames() if num_of_frames is None else min(
+            reader.get_num_frames(), start_frame + num_of_frames)
+        while reader.get_next_frame_idx() < end_frame:
+            image = reader.read_frame()
+            self.write_frame(image)
 
     def get_next_frame_idx(self):
         frame_length = self.width * self.height * 3
