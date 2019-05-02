@@ -5,11 +5,18 @@ from logger import logger
 import util
 
 class LogoDetector:
+    """Logo detector class that contains logos information and helps to detect logos in a single frame
+    """
 
     MIN_MATCH_COUNT = 10
     MIN_RANSAC_MATCH_COUNT = 5
 
     def __init__(self, logo_paths):
+        """Initialize LogoDetector with paths of logos
+        
+        Arguments:
+            logo_paths {dict} -- dict of logo paths in {<logo_name>: <logo_path>} format
+        """
         self.logos = []
         self.sift = cv.xfeatures2d.SIFT_create(edgeThreshold=10)
         for logo_name in logo_paths:
@@ -25,6 +32,15 @@ class LogoDetector:
             self.logos.append(logo)
     
     def _sift_match(self, logo, frame_img):
+        """Use SIFT to match a logo to a given frame image
+        
+        Arguments:
+            logo {dict} -- dict of logo with name, image, key points, and descriptor
+            frame_img {cv Image} -- an OpenCV image
+        
+        Returns:
+            numpy.ndarray or None -- a polygone representing homography if there are valid matches else None
+        """
         logo_name, logo_img = logo['name'], logo['img']
         kp_logo, des_logo = logo['keypoints'], logo['descriptor']
         logger.d('logo_name', logo_name)
@@ -76,6 +92,14 @@ class LogoDetector:
         return None
     
     def detect(self, frame_image):
+        """Detect a given frame image with each logo in the detector
+        
+        Arguments:
+            frame_image {PIL Image} -- an image to detect logos
+        
+        Returns:
+            dict -- dict in {<logo_name>: <polygon>} representing detected logo areas
+        """
         _frame = np.array(frame_image)
         frame = cv.cvtColor(_frame, cv.COLOR_RGB2GRAY)
         brand_areas = []

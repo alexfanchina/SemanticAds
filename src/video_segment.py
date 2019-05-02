@@ -6,12 +6,24 @@ import math
 import os
 
 class VideoSegment:
+    """Video segmentation module helping to segment and classify content/ad in a video
+    """
 
     FRAME_SIM_MAX = 40
     FRAME_SIM_MIN = 30
     SHOT_SIM_MIN = 0.07
     
     def __init__(self, path_video_file, frame_width, frame_height, use_saved=True):
+        """Initialize the video segmentation module with a video
+        
+        Arguments:
+            path_video_file {str} -- path of video to segment
+            frame_width {int} -- frame width of the video
+            frame_height {int} -- frame height of the video
+        
+        Keyword Arguments:
+            use_saved {bool} -- whether to use saved feature matrix file or not (default: {True})
+        """
         self.video_reader = VideoIO(path_video_file, frame_width, frame_height)
         feature_matrix_path = VideoSegment.get_feature_matrix_path(
             path_video_file)
@@ -27,7 +39,21 @@ class VideoSegment:
         logger.d('shot_boundaries', self.shot_boundaries)
         self.content_shots, self.ads_shots = self._tag_content_ads()
 
-    def _similariity_between_frames(self, frame_i, frame_j, kappa=150):
+    def _difference_between_frames(self, frame_i, frame_j, kappa=150):
+        """Calculate the difference between two frames. The higher difference 
+        indicates the more visual differences between the two frames.
+        
+        Arguments:
+            frame_i {int} -- index of first frame
+            frame_j {int} -- index of second frame
+        
+        Keyword Arguments:
+            kappa {int} -- an parameter controlling the principal components 
+            in the feature vectors (default: {150})
+        
+        Returns:
+            float -- difference between two frames
+        """
         s, v = self.s, self.vh.T
         diff_square = 0
         for idx in range(kappa):
@@ -35,7 +61,15 @@ class VideoSegment:
         return math.sqrt(diff_square)
     
     def _is_shot_boundary(self, diff, frame_i):
-        """Check if `frame_i` is the last frame of a shot
+        """Detect if a given frame is the last frame of a shot given all neighbor 
+        differences in the video frames
+        
+        Arguments:
+            diff {array} -- all the neighbor differences
+            frame_i {int} -- index of the frame to detect
+        
+        Returns:
+            bool -- whether the frame is the last frame of a shot
         """
         assert frame_i < len(diff)
         if frame_i == len(diff) - 1 or diff[frame_i + 1] >= self.FRAME_SIM_MAX:
@@ -44,18 +78,23 @@ class VideoSegment:
             return False, frame_i + 1
         else:
             x = frame_i + 2
-            while x + 1 < len(diff) and self._similariity_between_frames(frame_i + 1, x) >= self.FRAME_SIM_MIN:
+            while x + 1 < len(diff) and self._difference_between_frames(frame_i + 1, x) >= self.FRAME_SIM_MIN:
                 x += 1
-            if self._similariity_between_frames(frame_i, x) < self.FRAME_SIM_MAX:
+            if self._difference_between_frames(frame_i, x) < self.FRAME_SIM_MAX:
                 return True, x + 1
             else:
                 return False, frame_i + 1
     
     def _segment(self):
+        """Segment the video file into multiple shots
+        
+        Returns:
+            array -- list of shot boundary frame indices
+        """
         shot_boundaries = []
         diff = [0 for _ in range(self.video_reader.get_num_frames())]
         for frame in range(1, len(diff)):
-            diff[frame] = self._similariity_between_frames(frame, frame - 1, kappa=60)
+            diff[frame] = self._difference_between_frames(frame, frame - 1, kappa=60)
         frame = 0
         while frame < len(diff):
             is_shot_boundary, next = self._is_shot_boundary(diff, frame)
@@ -88,11 +127,25 @@ class VideoSegment:
     #     return np.average(sw_psi_array)
     
     def _avg_feature_vector(self, start_frame, end_frame):
+        """Get an average feature vector for a series of consecutive frames
+        
+        Arguments:
+            start_frame {int} -- index of the first frame in the frames
+            end_frame {int} -- index of the last frame in the frames
+        
+        Returns:
+            array -- average feature vector
+        """
         v = self.vh.T
         vectors = v[start_frame: end_frame + 1]
         return np.average(vectors, axis=0)
 
-    def _calc_shots_similarities(self):
+    def _calc_shots_differences(self):
+        """Calculate the differences between every each two shots
+        
+        Returns:
+            array -- the differences between every each two shots
+        """
         assert self.shot_boundaries is not None
         shot_first_frame = 0
         shot_vectors = []
@@ -101,14 +154,22 @@ class VideoSegment:
             shot_vectors.append(avg_feature_vector)
             shot_first_frame = shot_last_frame + 1
         len_shots = len(self.shot_boundaries)
-        similarities = [[np.linalg.norm(shot_vectors[i] - shot_vectors[j])
+        differences = [[np.linalg.norm(shot_vectors[i] - shot_vectors[j])
              for j in range(len_shots)] for i in range(len_shots)]
         import matplotlib.pyplot as plt
-        plt.imshow(similarities)
+        plt.imshow(differences)
         plt.show()
-        return similarities
+        return differences
 
     def _get_shot(self, shot_idx):
+        """Get the first and last frame indices in a shot 
+        
+        Arguments:
+            shot_idx {int} -- index of the shot
+        
+        Returns:
+            tupe(int, int) -- the first and last indices in the shot
+        """
         assert self.shot_boundaries is not None
         if shot_idx == 0:
             return 0, self.shot_boundaries[shot_idx]
@@ -116,22 +177,51 @@ class VideoSegment:
             return self.shot_boundaries[shot_idx - 1] + 1, self.shot_boundaries[shot_idx]
     
     def _get_shot_duration(self, shot_idx):
+        """Get the number of frames in a shot
+        
+        Arguments:
+            shot_idx {int} -- index of the shot
+        
+        Returns:
+            int -- number of frames in the shot
+        """
         start, end = self._get_shot(shot_idx)
         return end - start + 1
 
     def _get_shot_set_duration(self, shot_indices):
+        """Get the number of frames in a shot
+        
+        Arguments:
+            shot_indices {array} -- indices of the shots
+        
+        Returns:
+            int -- number of frames in the shots
+        """
         shots_duration = [self._get_shot_duration(i) for i in shot_indices]
         return np.sum(shots_duration)
 
     def _get_longest_shot_idx(self):
+        """Get the longest shot in the shots
+        
+        Returns:
+            int -- index of the longest shot
+        """
         shot_lengths = [self._get_shot_duration(i) for i in range(len(self.shot_boundaries))]
         return np.argmax(shot_lengths)
     
     def _tag_content_ads(self, threshold=SHOT_SIM_MIN):
+        """Tag content/ad to the shots
+        
+        Keyword Arguments:
+            threshold {float} -- a parameter for tagging (default: {SHOT_SIM_MIN})
+        
+        Returns:
+            tupe(list, list) -- indices of content shots and ad shots
+        """
         # we assume the longest shot in a video is not ad
         _longest_shot_idx = self._get_longest_shot_idx()
         logger.d('_longest_shot_idx', _longest_shot_idx)
-        _similarity = np.array(self._calc_shots_similarities()[_longest_shot_idx])
+        _similarity = np.array(self._calc_shots_differences()[_longest_shot_idx])
         logger.d('_similarity', _similarity)
         _one_class = np.where(_similarity < threshold)[0]
         _other_class = np.where(_similarity >= threshold)[0]
@@ -141,14 +231,31 @@ class VideoSegment:
             return _other_class, _one_class
     
     def get_all_shots(self):
+        """Get the first and last frames of all shots
+        
+        Returns:
+            list(tupe(int,int)) -- first and last frames of all shots
+        """
         return [self._get_shot(i) for i in range(len(self.shot_boundaries))]
 
     def get_content_ads_shots(self):
+        """Get the first and last frames of content and ad shots
+        
+        Returns:
+            list(tupe(int,int)), list(tupe(int,int)) -- first and last frames of content and ad shots
+        """
         content_shots = [self._get_shot(i) for i in self.content_shots]
         ads_shots = [self._get_shot(i) for i in self.ads_shots]
         return np.array(content_shots, dtype='int,int'), np.array(ads_shots, dtype='int,int')
     
     def save_content(self, video_output, audio_input, audio_output):
+        """Concatnate the content shots with ads removed and save to a video file
+        
+        Arguments:
+            video_output {str} -- path of the output video file
+            audio_input {str} -- path of the corresponding audio file
+            audio_output {str} -- path of the output audio file
+        """
         logger.i('Saving content shots to %s...' % video_output)
         frame_width = self.video_reader.width
         frame_height = self.video_reader.height

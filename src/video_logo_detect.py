@@ -46,6 +46,12 @@ class VideoLogoDetect:
         logger.i('Logo detection data saved to %s' % logo_data_path)
     
     def _logo_data_with_ads(self):
+        """Generate new logo data (frame indices and polygon areas of logos) in 
+        in video with ads inserted, using the old logo data in the no-ads video
+        
+        Returns:
+            list(tuple) -- new logo data
+        """
         ads_to_insert = self.logo_first_occurences
         pos_ads_length = []
         for ad_name in ads_to_insert:
